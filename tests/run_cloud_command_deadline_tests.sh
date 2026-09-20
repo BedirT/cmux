@@ -18,11 +18,18 @@ let package = Package(
     swiftLanguageModes: [.v5]
 )
 SWIFT
-for name in CloudTuiPersistentResourceConnection CloudTuiPersistentRequestBuilder CloudTuiTerminalProjectionTarget \
+# CloudTuiTerminalProjectionTarget lives in the CmuxSurfaceCatalogModel package, not in Sources/Cloud.
+cp "$ROOT/Packages/macOS/CmuxSurfaceCatalogModel/Sources/CmuxSurfaceCatalogModel/CloudTuiTerminalProjectionTarget.swift" \
+    "$DEST/Sources/CloudCommandFixture/"
+for name in CloudTuiPersistentResourceConnection CloudTuiPersistentRequestBuilder \
     CloudTuiManualIOConnection CloudTuiManualIODescriptorLease CloudTuiManualIOCommand \
     CloudTuiManualIOFrame CloudTuiManualIOFrameDecoder CloudTuiRemoteColors; do
     cp "$ROOT/Sources/Cloud/$name.swift" "$DEST/Sources/CloudCommandFixture/"
 done
+# The fixture stubs the catalog value types it needs (StandaloneDependencies.swift), so the
+# copied sources must not import the real package.
+sed -i.bak '/^import CmuxSurfaceCatalogModel$/d' "$DEST/Sources/CloudCommandFixture/"*.swift
+rm -f "$DEST/Sources/CloudCommandFixture/"*.bak
 cp "$ROOT/tests/fixtures/cloud-command-deadlines/StandaloneDependencies.swift" "$DEST/Sources/CloudCommandFixture/"
 for name in CloudCommandDeadlineClock CloudCommandDeadlineTests CloudTuiManualIOConnectionTests; do
     cp "$ROOT/cmuxTests/$name.swift" "$DEST/Tests/CloudCommandFixtureTests/"
